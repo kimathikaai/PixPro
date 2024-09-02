@@ -130,8 +130,8 @@ class PixPro(BaseModel):
         nn.SyncBatchNorm.convert_sync_batchnorm(self.projector)
         nn.SyncBatchNorm.convert_sync_batchnorm(self.projector_k)
 
-        self.K = int(args.num_instances * 1. / get_world_size() / args.batch_size * args.epochs)
-        self.k = int(args.num_instances * 1. / get_world_size() / args.batch_size * (args.start_epoch - 1))
+        self.K = int(args.num_instances * 1. / 1 / args.batch_size * args.epochs)
+        self.k = int(args.num_instances * 1. / 1 / args.batch_size * (args.start_epoch - 1))
 
         if self.pixpro_transform_layer == 0:
             self.value_transform = Identity()

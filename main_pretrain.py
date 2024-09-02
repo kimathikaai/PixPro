@@ -28,28 +28,29 @@ except ImportError:
 
 def build_model(args):
     encoder = resnet.__dict__[args.arch]
-    model = models.__dict__[args.model](encoder, args).cuda()
+    # model = models.__dict__[args.model](encoder, args).cuda()
+    model = models.__dict__[args.model](encoder, args)
 
     if args.optimizer == 'sgd':
         optimizer = torch.optim.SGD(
             model.parameters(),
-            lr=args.batch_size * dist.get_world_size() / 256 * args.base_learning_rate,
+            lr=args.batch_size * 1 / 256 * args.base_learning_rate,
             momentum=args.momentum,
             weight_decay=args.weight_decay,)
     elif args.optimizer == 'lars':
         params = add_weight_decay(model, args.weight_decay)
         optimizer = torch.optim.SGD(
             params,
-            lr=args.batch_size * dist.get_world_size() / 256 * args.base_learning_rate,
+            lr=args.batch_size * 1 / 256 * args.base_learning_rate,
             momentum=args.momentum,)
         optimizer = LARS(optimizer)
     else:
         raise NotImplementedError
 
-    if args.amp_opt_level != "O0":
-        model, optimizer = amp.initialize(model, optimizer, opt_level=args.amp_opt_level)
+    # if args.amp_opt_level != "O0":
+    #     model, optimizer = amp.initialize(model, optimizer, opt_level=args.amp_opt_level)
 
-    model = DistributedDataParallel(model, device_ids=[args.local_rank], broadcast_buffers=False)
+    # model = DistributedDataParallel(model, device_ids=[args.local_rank], broadcast_buffers=False)
 
     return model, optimizer
 
@@ -88,17 +89,20 @@ def save_checkpoint(args, epoch, model, optimizer, scheduler, sampler=None):
         'opt': args,
         'model': model.state_dict(),
         'optimizer': optimizer.state_dict(),
-        'scheduler': scheduler.state_dict(),
+        # 'scheduler': scheduler.state_dict(),
         'epoch': epoch,
     }
-    if args.amp_opt_level != "O0":
-        state['amp'] = amp.state_dict()
+    # if args.amp_opt_level != "O0":
+    #     state['amp'] = amp.state_dict()
     file_name = os.path.join(args.output_dir, f'ckpt_epoch_{epoch}.pth')
     torch.save(state, file_name)
     copyfile(file_name, os.path.join(args.output_dir, 'current.pth'))
 
 
 def main(args):
+    model, optimizer = build_model(args)
+    save_checkpoint(args, 0, model, optimizer, None, sampler=None)
+    exit()
     train_prefix = 'train'
     train_loader = get_loader(
         args.aug, args,
@@ -109,7 +113,6 @@ def main(args):
     args.num_instances = len(train_loader.dataset)
     logger.info(f"length of training dataset: {args.num_instances}")
 
-    model, optimizer = build_model(args)
     scheduler = get_scheduler(optimizer, len(train_loader), args)
 
     # optionally resume from a checkpoint
@@ -193,17 +196,19 @@ def train(epoch, train_loader, model, optimizer, scheduler, args, summary_writer
 if __name__ == '__main__':
     opt = parse_option(stage='pre-train')
 
-    if opt.amp_opt_level != "O0":
-        assert amp is not None, "amp not installed!"
+    # if opt.amp_opt_level != "O0":
+    #     assert amp is not None, "amp not installed!"
 
-    torch.cuda.set_device(opt.local_rank)
-    torch.distributed.init_process_group(backend='nccl', init_method='env://')
-    cudnn.benchmark = True
+    # torch.cuda.set_device(opt.local_rank)
+    # torch.distributed.init_process_group(backend='nccl', init_method='env://')
+    # cudnn.benchmark = True
 
     # setup logger
     os.makedirs(opt.output_dir, exist_ok=True)
-    logger = setup_logger(output=opt.output_dir, distributed_rank=dist.get_rank(), name="contrast")
-    if dist.get_rank() == 0:
+    # logger = setup_logger(output=opt.output_dir, distributed_rank=dist.get_rank(), name="contrast")
+    logger = setup_logger(output=opt.output_dir, distributed_rank=0, name="contrast")
+    # if dist.get_rank() == 0:
+    if opt.local_rank == 0:
         path = os.path.join(opt.output_dir, "config.json")
         with open(path, 'w') as f:
             json.dump(vars(opt), f, indent=2)

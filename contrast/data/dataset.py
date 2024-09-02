@@ -108,6 +108,7 @@ class DatasetFolder(data.Dataset):
         if ann_file == '':
             _, class_to_idx = find_classes(root)
             samples = make_dataset(root, class_to_idx, extensions)
+            # import pdb; pdb.set_trace()
         # zip mode
         else:
             samples = make_dataset_with_ann(os.path.join(root, ann_file),

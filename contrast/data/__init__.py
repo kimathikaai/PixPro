@@ -38,7 +38,8 @@ def get_loader(aug_type, args, two_crop=False, prefix='train', return_coord=Fals
             return_coord=return_coord)
 
     # sampler
-    indices = np.arange(dist.get_rank(), len(train_dataset), dist.get_world_size())
+    # indices = np.arange(dist.get_rank(), len(train_dataset), dist.get_world_size())
+    indices = np.arange(args.local_rank, len(train_dataset), 1)
     if args.zip and args.cache_mode == 'part':
         sampler = SubsetRandomSampler(indices)
     else:
