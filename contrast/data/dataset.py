@@ -26,6 +26,7 @@ def find_classes(dir):
     classes = [d for d in os.listdir(dir) if os.path.isdir(os.path.join(dir, d))]
     classes.sort()
     class_to_idx = {classes[i]: i for i in range(len(classes))}
+    print(f"[INFO] {classes = }, {class_to_idx = }")
     return classes, class_to_idx
 
 
@@ -115,6 +116,7 @@ class DatasetFolder(data.Dataset):
                                             extensions,
                                             dataset)
 
+        print(f"[INFO] {len(samples) = }")
         if len(samples) == 0:
             raise(RuntimeError("Found 0 files in subfolders of: " + root + "\n"
                                "Supported extensions are: " + ",".join(extensions)))
