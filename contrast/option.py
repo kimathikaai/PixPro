@@ -70,7 +70,7 @@ def parse_option(stage='pre-train'):
     parser.add_argument('--resume', default='', type=str, metavar='PATH', help='path to latest checkpoint')
     parser.add_argument('--print-freq', type=int, default=100, help='print frequency')
     parser.add_argument('--save-freq', type=int, default=10, help='save frequency')
-    parser.add_argument("--local_rank", type=int, default=os.environ['LOCAL_RANK'], help='local rank for DistributedDataParallel')
+    parser.add_argument("--local-rank", type=int, required=True, help='local rank for DistributedDataParallel')
     if stage == 'linear':
         parser.add_argument('--pretrained-model', type=str, required=True, help="pretrained model path")
         parser.add_argument('-e', '--eval', action='store_true', help='only evaluate')
