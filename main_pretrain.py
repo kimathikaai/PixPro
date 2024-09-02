@@ -214,7 +214,7 @@ if __name__ == '__main__':
     if opt.amp_opt_level != "O0":
         assert amp is not None, "amp not installed!"
 
-    torch.cuda.set_device(os.environ['LOCAL_RANK'])
+    torch.cuda.set_device(opt.local_rank)
     torch.distributed.init_process_group(backend='nccl', init_method='env://')
     cudnn.benchmark = True
 
