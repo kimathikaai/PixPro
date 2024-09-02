@@ -13,7 +13,7 @@ log_dir="${base_dir_1}/ssl-pretraining/logs/${run_id}"
 # --zip  
 # python main_pretrain.py \
 # --amp-opt-level O1 \
-CUDA_VISIBLE_DEVICES=2,3 python -m torch.distributed.launch --master_port 12348 --nproc_per_node=1 \
+CUDA_VISIBLE_DEVICES=2,3 python -m torch.distributed.launch --master_port 12348 --nproc_per_node=2 \
     main_pretrain.py \
     --seed 0 \
     --run_id $run_id \
