@@ -18,14 +18,13 @@ CUDA_VISIBLE_DEVICES=2,3 python -m torch.distributed.launch --master_port 12348 
     --run_id $run_id \
     --data-dir ${data_dir} \
     --output-dir ${log_dir} \
-    --local_rank 0 \
     \
     --cache-mode no \
     --crop 0.08 \
     --aug BYOL \
     --dataset ImageNet \
     --batch-size 32 \
-    --num_workers 32 \
+    --num-workers 32 \
     \
     --model PixPro \
     --arch resnet50 \
