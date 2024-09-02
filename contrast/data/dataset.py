@@ -189,17 +189,16 @@ class DatasetFolder(data.Dataset):
 
 IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif']
 
-
 def pil_loader(path):
     # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
-    if isinstance(path, bytes):
-        img = Image.open(io.BytesIO(path))
-    elif is_zip_path(path):
-        data = ZipReader.read(path)
-        img = Image.open(io.BytesIO(data))
-    else:
-        with open(path, 'rb') as f:
-            img = Image.open(f)
+    # if isinstance(path, bytes):
+    #     img = Image.open(io.BytesIO(path))
+    # elif is_zip_path(path):
+    #     data = ZipReader.read(path)
+    #     img = Image.open(io.BytesIO(data))
+    # else:
+    with open(path, 'rb') as f:
+        img = Image.open(f)
     return img.convert('RGB')
 
 
