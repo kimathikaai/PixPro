@@ -2,13 +2,16 @@ import json
 import os
 import time
 from shutil import copyfile
+import numpy as np
+import random
+import subprocess
 
+import wandb
 import torch
 import torch.distributed as dist
 from torch.backends import cudnn
 from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data.distributed import DistributedSampler
-from torch.utils.tensorboard import SummaryWriter
 
 from contrast import models
 from contrast import resnet
@@ -90,12 +93,13 @@ def save_checkpoint(args, epoch, model, optimizer, scheduler, sampler=None):
         'optimizer': optimizer.state_dict(),
         'scheduler': scheduler.state_dict(),
         'epoch': epoch,
+        'pretrain_type': 'PIXPRO'
     }
     if args.amp_opt_level != "O0":
         state['amp'] = amp.state_dict()
     file_name = os.path.join(args.output_dir, f'ckpt_epoch_{epoch}.pth')
     torch.save(state, file_name)
-    copyfile(file_name, os.path.join(args.output_dir, 'current.pth'))
+    copyfile(file_name, os.path.join(args.output_dir, 'checkpoint.ckpt'))
 
 
 def main(args):
@@ -129,21 +133,34 @@ def main(args):
 
     # tensorboard
     if dist.get_rank() == 0:
-        summary_writer = SummaryWriter(log_dir=args.output_dir)
-    else:
-        summary_writer = None
+        wandb.init(
+            name=args.run_id,
+            project=args.wandb_project,
+            entity=args.wandb_team,
+            dir=args.output_dir,
+            tags=["pretrain"],
+        )
+        # Add hyperparameters to config
+        wandb.config.update({"param": vars(args)})
+        wandb.config.update(
+            {"nvidia-smi": subprocess.check_output(["nvidia-smi"]).decode()}
+        )
 
     for epoch in range(args.start_epoch, args.epochs + 1):
         if isinstance(train_loader.sampler, DistributedSampler):
             train_loader.sampler.set_epoch(epoch)
 
-        train(epoch, train_loader, model, optimizer, scheduler, args, summary_writer)
+        train(epoch, train_loader, model, optimizer, scheduler, args)
+
+        # tensorboard logger
+        if dist.get_rank() == 0:
+            wandb.log({'epoch': epoch})
 
         if dist.get_rank() == 0 and (epoch % args.save_freq == 0 or epoch == args.epochs):
             save_checkpoint(args, epoch, model, optimizer, scheduler, sampler=train_loader.sampler)
 
 
-def train(epoch, train_loader, model, optimizer, scheduler, args, summary_writer):
+def train(epoch, train_loader, model, optimizer, scheduler, args):
     """
     one epoch training
     """
@@ -184,10 +201,11 @@ def train(epoch, train_loader, model, optimizer, scheduler, args, summary_writer
                 f'loss {loss_meter.val:.3f} ({loss_meter.avg:.3f})')
 
             # tensorboard logger
-            if summary_writer is not None:
+            if dist.get_rank() == 0:
                 step = (epoch - 1) * len(train_loader) + idx
-                summary_writer.add_scalar('lr', lr, step)
-                summary_writer.add_scalar('loss', loss_meter.val, step)
+                wandb.log({'lr': lr})
+                wandb.log({'loss_val': loss_meter.val, 'step': step})
+                wandb.log({'loss_avg': loss_meter.avg, 'step': step})
 
 
 if __name__ == '__main__':
@@ -200,6 +218,13 @@ if __name__ == '__main__':
     torch.distributed.init_process_group(backend='nccl', init_method='env://')
     cudnn.benchmark = True
 
+    # Seeds
+    random.seed(opt.seed)
+    torch.manual_seed(opt.seed)
+    np.random.seed(opt.seed)
+    torch.cuda.manual_seed_all(opt.seed)
+    cudnn.deterministic = True
+
     # setup logger
     os.makedirs(opt.output_dir, exist_ok=True)
     logger = setup_logger(output=opt.output_dir, distributed_rank=dist.get_rank(), name="contrast")
@@ -208,6 +233,7 @@ if __name__ == '__main__':
         with open(path, 'w') as f:
             json.dump(vars(opt), f, indent=2)
         logger.info("Full config saved to {}".format(path))
+        logger.info(f"{dist.get_world_size() = }")
 
     # print args
     logger.info(

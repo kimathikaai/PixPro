@@ -54,7 +54,7 @@ def get_transform(aug_type, crop, image_size=224):
             transforms.RandomGrayscale(p=0.2),
             transforms.RandomApply([GaussianBlur()], p=1.0),
             transforms.ToTensor(),
-            normalize,
+            # normalize,
         ])
         transform_2 = transform_coord.Compose([
             transform_coord.RandomResizedCropCoord(image_size, scale=(crop, 1.)),
@@ -64,7 +64,7 @@ def get_transform(aug_type, crop, image_size=224):
             transforms.RandomApply([GaussianBlur()], p=0.1),
             transforms.RandomApply([ImageOps.solarize], p=0.2),
             transforms.ToTensor(),
-            normalize,
+            # normalize,
         ])
         transform = (transform_1, transform_2)
     elif aug_type == 'RandAug':  # used in InfoMin

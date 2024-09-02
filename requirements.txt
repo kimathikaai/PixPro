@@ -1,5 +1,5 @@
 pycocotools
 opencv-python
 pillow
-tensorboard
 termcolor
+wandb

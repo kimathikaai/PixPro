@@ -10,6 +10,10 @@ def parse_option(stage='pre-train'):
     parser = argparse.ArgumentParser(f'contrast {stage} stage', formatter_class=MyHelpFormatter)
 
     # dataset
+    parser.add_argument('--seed', type=int, default=0)
+    parser.add_argument("--run_id", required=True, type=str, help='Unique identifier for a run')
+    parser.add_argument("--wandb_project", type=str, default='ssl-pretraining', help='Wandb project name')
+    parser.add_argument("--wandb_team", type=str, default='critical-ml-dg', help='Wandb team name')
     parser.add_argument('--data-dir', type=str, default='./data', help='dataset director')
     parser.add_argument('--crop', type=float, default=0.2 if stage == 'pre-train' else 0.08, help='minimum crop')
     parser.add_argument('--aug', type=str, default='NULL',
