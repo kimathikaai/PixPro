@@ -12,6 +12,7 @@ import torch.distributed as dist
 from torch.backends import cudnn
 from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data.distributed import DistributedSampler
+import torchvision
 
 from contrast import models
 from contrast import resnet
@@ -31,6 +32,9 @@ except ImportError:
 
 def build_model(args):
     encoder = resnet.__dict__[args.arch]
+    # Load resnet50 pre-trained weights
+    resnet50 = torchvision.models.resnet50(weights=torchvision.models.ResNet50_Weights.IMAGENET1K_V2)
+    encoder.load_state_dict(resnet50.state_dict(), strict=True)
     model = models.__dict__[args.model](encoder, args).cuda()
 
     if args.optimizer == 'sgd':
