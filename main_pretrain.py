@@ -37,8 +37,9 @@ def build_model(args):
     if args.arch == 'resnet50':
         # Load resnet50 pre-trained weights
         resnet50 = torchvision.models.resnet50(weights=torchvision.models.ResNet50_Weights.IMAGENET1K_V2)
-        model.encoder.load_state_dict(resnet50.state_dict(), strict=True)
-        model.encoder_k.load_state_dict(resnet50.state_dict(), strict=True)
+        print("Load resnet50 IMAGENET1K_V2 weights")
+        print(model.encoder.load_state_dict(resnet50.state_dict(), strict=False))
+        print(model.encoder_k.load_state_dict(resnet50.state_dict(), strict=False))
     else:
         raise NotImplemented(f"{args.arch = }, {args.model = }")
 
