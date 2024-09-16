@@ -35,7 +35,7 @@ CUDA_VISIBLE_DEVICES=2,3 python -m torch.distributed.launch --master_port 12348 
     --base-lr 1.0 \
     --weight-decay 1e-5 \
     --warmup-epoch 5 \
-    --epochs 100 \
+    --epochs 200 \
     --amp-opt-level O0 \
     \
     --save-freq 10 \
