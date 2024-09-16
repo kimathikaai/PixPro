@@ -32,10 +32,15 @@ except ImportError:
 
 def build_model(args):
     encoder = resnet.__dict__[args.arch]
-    # Load resnet50 pre-trained weights
-    resnet50 = torchvision.models.resnet50(weights=torchvision.models.ResNet50_Weights.IMAGENET1K_V2)
-    encoder.load_state_dict(resnet50.state_dict(), strict=True)
     model = models.__dict__[args.model](encoder, args).cuda()
+
+    if args.arch == 'resnet50':
+        # Load resnet50 pre-trained weights
+        resnet50 = torchvision.models.resnet50(weights=torchvision.models.ResNet50_Weights.IMAGENET1K_V2)
+        model.encoder.load_state_dict(resnet50.state_dict(), strict=True)
+        model.encoder_k.load_state_dict(resnet50.state_dict(), strict=True)
+    else:
+        raise NotImplemented(f"{args.arch = }, {args.model = }")
 
     if args.optimizer == 'sgd':
         optimizer = torch.optim.SGD(
