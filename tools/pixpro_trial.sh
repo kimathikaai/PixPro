@@ -2,6 +2,8 @@
 base_dir_0='/mnt/pub0'
 base_dir_1='/mnt/pub1'
 log_dir="${base_dir_1}/ssl-pretraining/logs"
+hist_dir='/mnt/pub1/ssl-pretraining/data/histopathology'
+hist_pretrain_dir="${hist_dir}/aSMA_SmoothMuscle"
 
 set -e
 set -x
@@ -13,11 +15,11 @@ log_dir="${base_dir_1}/ssl-pretraining/logs/${run_id}"
 # --zip  
 # python main_pretrain.py \
 # --amp-opt-level O1 \
-CUDA_VISIBLE_DEVICES=2,3 python -m torch.distributed.launch --master_port 12348 --nproc_per_node=2 \
+CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --master_port 12348 --nproc_per_node=2 \
     main_pretrain.py \
     --seed 0 \
     --run_id $run_id \
-    --data-dir ${data_dir} \
+    --data-dir ${hist_pretrain_dir} \
     --output-dir ${log_dir} \
     \
     --cache-mode no \
