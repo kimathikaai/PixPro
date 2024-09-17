@@ -26,7 +26,7 @@ CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --master_port 12348 
     --crop 0.08 \
     --aug BYOL \
     --dataset ImageNet \
-    --batch-size 32 \
+    --batch-size 128 \
     --num-workers 32 \
     \
     --model PixPro \
@@ -37,7 +37,7 @@ CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --master_port 12348 
     --base-lr 1.0 \
     --weight-decay 1e-5 \
     --warmup-epoch 5 \
-    --epochs 200 \
+    --epochs 10 \
     --amp-opt-level O0 \
     \
     --save-freq 10 \
