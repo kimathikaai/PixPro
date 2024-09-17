@@ -4,6 +4,7 @@ base_dir_1='/mnt/pub1'
 log_dir="${base_dir_1}/ssl-pretraining/logs"
 hist_dir='/mnt/pub1/ssl-pretraining/data/histopathology'
 hist_pretrain_dir="${hist_dir}/aSMA_SmoothMuscle"
+polyp_dir='/mnt/pub1/ssl-pretraining/data/hyper-kvasir/unlabeled-images'
 
 set -e
 set -x
@@ -19,7 +20,7 @@ CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --master_port 12348 
     main_pretrain.py \
     --seed 0 \
     --run_id $run_id \
-    --data-dir ${hist_pretrain_dir} \
+    --data-dir ${polyp_dir} \
     --output-dir ${log_dir} \
     \
     --cache-mode no \
