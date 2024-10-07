@@ -5,12 +5,13 @@ log_dir="${base_dir_1}/ssl-pretraining/logs"
 hist_dir='/mnt/pub1/ssl-pretraining/data/histopathology'
 hist_pretrain_dir="${hist_dir}/aSMA_SmoothMuscle"
 polyp_dir='/mnt/pub1/ssl-pretraining/data/hyper-kvasir/unlabeled-images'
+hyperkvasir_segpathasma='/mnt/pub1/ssl-pretraining/data/hyperkvasir-segpathasma'
 
 set -e
 set -x
 
 data_dir="${base_dir_1}/ssl-pretraining/data/polyp"
-run_id="$(date +"%y%m%d%H%M%S")-PixPro"
+run_id="$(date +"%y%m%d%H%M%S")-PixPro-PHHS"
 log_dir="${base_dir_1}/ssl-pretraining/logs/${run_id}"
 
 # --zip  
@@ -20,7 +21,7 @@ CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --master_port 12348 
     main_pretrain.py \
     --seed 0 \
     --run_id $run_id \
-    --data-dir ${polyp_dir} \
+    --data-dir ${hyperkvasir_segpathasma} \
     --output-dir ${log_dir} \
     \
     --cache-mode no \
